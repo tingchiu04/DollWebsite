@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>訂單付款 | 布偶日和</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    <style>
+        @font-face { font-family: 'OpenHuninn'; src: url('jf-openhuninn-2.0.ttf') format('truetype'); }
+        :root { --color-pink-hot: #ffafcc; --text-color: #5a4a4a; }
+        body { font-family: 'OpenHuninn', sans-serif; background-color: #f7e1ea; padding: 20px; color: var(--text-color); }
+        .container { background: white; max-width: 600px; margin: 0 auto; padding: 30px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: var(--color-pink-hot); border-bottom: 2px dashed #ddd; padding-bottom: 15px; }
+        
+        /* 清單樣式 */
+        .list-group { margin-bottom: 20px; border: 1px solid #eee; border-radius: 10px; padding: 10px; background: #fffafa; }
+        .list-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #eee; font-size: 1rem; }
+        .list-item:last-child { border-bottom: none; }
+        .item-name { font-weight: bold; }
+        .item-sub { font-size: 0.85rem; color: #888; margin-top: 4px; }
+        
+        .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 1.3rem; margin-top: 15px; color: var(--color-pink-hot); border-top: 2px solid #eee; padding-top: 15px; }
+        .btn { background: var(--color-pink-hot); color: white; width: 100%; padding: 15px; border: none; border-radius: 50px; font-size: 1.2rem; cursor: pointer; margin-top: 20px; font-weight: bold; }
+        
+        .empty-msg { text-align: center; color: #888; margin: 30px 0; }
+        
+        /* 備註框樣式 */
+        .note-area { width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 10px; font-family: 'OpenHuninn', sans-serif; font-size: 1rem; box-sizing: border-box; resize: vertical; background: #fdfdfd; }
+        .note-area:focus { outline: none; border-color: var(--color-pink-hot); background: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>💳 結帳付款</h2>
+        
+        <div id="orderContent">
+            </div>
+
+        <div id="paymentSection" style="display:none;">
+            <div style="margin: 20px 0;">
+                <label style="font-weight:bold; display:block; margin-bottom:8px;">訂單備註 / 色號指定</label>
+                <textarea id="orderNote" rows="3" class="note-area" placeholder="例如：絨布要紅色、消色筆要藍色..."></textarea>
+            </div>
+
+            <h3>選擇付款方式</h3>
+            <label style="display:block; margin:10px 0; cursor:pointer;"><input type="radio" name="pay" checked> 信用卡 (Visa/Master)</label>
+            <label style="display:block; margin:10px 0; cursor:pointer;"><input type="radio" name="pay"> 銀行轉帳 / ATM</label>
+
+            <button class="btn" onclick="processPayment()">確認支付 NT$ <span id="btnAmount">0</span></button>
+        </div>
+        
+        <div style="text-align: center; margin-top: 15px;"><a href="index.html" style="color:#999; text-decoration:none;">取消</a></div>
+    </div>
+
+    <script>
+        const shopCart = JSON.parse(localStorage.getItem('shopCart'));
+        const bookingData = JSON.parse(localStorage.getItem('bookingData'));
+        const contentDiv = document.getElementById('orderContent');
+        const paymentSection = document.getElementById('paymentSection');
+        const noteInput = document.getElementById('orderNote');
+        
+        let total = 0;
+        let html = '';
+        let finalItems = []; 
+
+        // 1. 檢查是否有預約資料
+        if (bookingData && bookingData.price > 0) {
+            html += `<h4 style="margin:0 0 10px 0; color:#555;">📅 預約訂金</h4><div class="list-group">`;
+            html += `
+                <div class="list-item">
+                    <div>
+                        <div class="item-name">${bookingData.name}</div>
+                        <div class="item-sub">預約人: ${bookingData.user} / 日期: ${bookingData.date}</div>
+                    </div>
+                    <span>$${bookingData.price}</span>
+                </div>`;
+            html += `</div>`;
+            total += bookingData.price;
+            finalItems.push({ name: `[預約] ${bookingData.name}`, price: bookingData.price });
+            
+            // 如果預約時有填寫備註，自動帶入備註框
+            if(bookingData.note) {
+                noteInput.value = bookingData.note;
+            }
+        }
+
+        // 2. 檢查是否有購物車資料
+        if (shopCart && shopCart.length > 0) {
+            html += `<h4 style="margin:15px 0 10px 0; color:#555;">🛍️ 購買商品</h4><div class="list-group">`;
+            shopCart.forEach(item => {
+                let subTotal = item.price * item.qty;
+                html += `
+                    <div class="list-item">
+                        <div>
+                            <div class="item-name">${item.name} x ${item.qty}</div>
+                            <div class="item-sub">${item.option}</div>
+                        </div>
+                        <span>$${subTotal}</span>
+                    </div>`;
+                total += subTotal;
+                finalItems.push({ name: `${item.name} (${item.option}) x${item.qty}`, price: subTotal });
+            });
+            html += `</div>`;
+        }
+
+        // 3. 渲染頁面
+        if (total === 0) {
+            html = '<div class="empty-msg">目前沒有待付款的項目<br><a href="shop.html" style="color:var(--color-pink-hot);">去商城逛逛？</a></div>';
+        } else {
+            html += `<div class="total-row"><span>總金額</span><span>NT$ ${total}</span></div>`;
+            paymentSection.style.display = 'block'; 
+        }
+
+        contentDiv.innerHTML = html;
+        document.getElementById('btnAmount').innerText = total;
+
+        // 4. 付款處理
+        function processPayment() {
+            let type = 'shop';
+            if (bookingData && shopCart) type = 'mixed';
+            else if (bookingData) type = 'booking';
+
+            const contactEmail = bookingData ? bookingData.email : "未提供(購物)";
+            const bookingDate = bookingData ? bookingData.date : null;
+            
+            // ★ 抓取使用者填寫的備註
+            const userNote = document.getElementById('orderNote').value;
+
+            const orderRecord = {
+                type: type,
+                isBooking: !!bookingData,
+                bookingDate: bookingDate,
+                contactEmail: contactEmail,
+                items: finalItems,
+                total: total,
+                note: userNote, // ★ 存入備註
+                date: new Date().toLocaleString()
+            };
+            localStorage.setItem('lastOrder', JSON.stringify(orderRecord));
+            
+            localStorage.removeItem('shopCart');
+            localStorage.removeItem('bookingData');
+            
+            window.location.href = "success.html";
+        }
+    </script>
+</body>
+</html>

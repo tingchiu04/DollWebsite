@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>訂購成功 | 布偶日和</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    <style>
+        @font-face { font-family: 'OpenHuninn'; src: url('jf-openhuninn-2.0.ttf') format('truetype'); }
+        body { font-family: 'OpenHuninn', sans-serif; background-color: #f7e1ea; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .card { background: #ffffff; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
+        h1 { color: #e493b3; margin-bottom: 10px; }
+        .icon { font-size: 4rem; margin-bottom: 20px; display: block; }
+        
+        .reminder-box { background: #e3f2fd; border: 2px solid #90caf9; color: #1565c0; padding: 15px; border-radius: 10px; margin: 20px 0; text-align: left; display: none; }
+        .reminder-title { font-weight: bold; font-size: 1.1rem; margin-bottom: 5px; }
+
+        .receipt { background: #fffafa; border: 2px dashed #e493b3; padding: 20px; border-radius: 10px; margin: 20px 0; text-align: left; }
+        .receipt-title { font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px; color: #555; }
+        .receipt-item { display: flex; justify-content: space-between; font-size: 0.95rem; margin-bottom: 8px; color: #666; }
+        .receipt-total { display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1rem; border-top: 1px solid #eee; padding-top: 10px; margin-top: 10px; color: #e493b3; }
+        
+        /* 備註顯示區塊 */
+        .receipt-note { margin-top: 15px; padding-top: 10px; border-top: 1px dashed #eee; font-size: 0.9rem; color: #777; }
+        .receipt-note strong { color: #555; }
+
+        .btn { display: inline-block; margin-top: 10px; text-decoration: none; background: #e493b3; color: white; padding: 12px 30px; border-radius: 50px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="icon">🎉</span>
+        <h1 id="pageTitle">完成訂單！</h1>
+        <p id="subText">感謝您的購買，我們已收到您的資訊。</p>
+
+        <div id="bookingReminder" class="reminder-box">
+            <div class="reminder-title">📅 預約提醒</div>
+            <p style="margin: 0;">請務必記得於 <strong><span id="reminderDate"></span></strong> 前往工作室。</p>
+            <p style="margin: 5px 0 0 0; font-size: 0.9rem; opacity: 0.8;">確認信已發送至：<span id="reminderEmail"></span></p>
+        </div>
+
+        <div class="receipt">
+            <div class="receipt-title">訂單明細</div>
+            <div id="receiptList"></div>
+            
+            <div id="noteDisplay" class="receipt-note" style="display:none;">
+                <strong>備註：</strong><br><span id="noteText"></span>
+            </div>
+
+            <div class="receipt-total">
+                <span>總計</span>
+                <span id="receiptTotal">NT$ 0</span>
+            </div>
+        </div>
+
+        <a href="index.html" class="btn">返回首頁</a>
+    </div>
+
+    <script>
+        const lastOrder = JSON.parse(localStorage.getItem('lastOrder'));
+        
+        if (lastOrder) {
+            const listDiv = document.getElementById('receiptList');
+            const reminderBox = document.getElementById('bookingReminder');
+
+            // 1. 預約提醒邏輯
+            if (lastOrder.isBooking) {
+                reminderBox.style.display = 'block';
+                document.getElementById('reminderDate').innerText = lastOrder.bookingDate;
+                document.getElementById('reminderEmail').innerText = lastOrder.contactEmail;
+                
+                if (lastOrder.total === 0) {
+                    document.getElementById('pageTitle').innerText = "預約成功！";
+                    document.getElementById('subText').innerText = "您的諮詢已預約完成，無需事先付款。";
+                    reminderBox.style.background = "#fff8e1"; 
+                    reminderBox.style.borderColor = "#ffe082";
+                    reminderBox.style.color = "#d84315";
+                }
+            }
+
+            // 2. 顯示清單
+            let html = '';
+            if (lastOrder.items && lastOrder.items.length > 0) {
+                lastOrder.items.forEach(item => {
+                    html += `
+                    <div class="receipt-item">
+                        <span>${item.name}</span>
+                        <span>$${item.price}</span>
+                    </div>`;
+                });
+            } else {
+                html = '<div style="text-align:center;color:#ccc;">無明細資料</div>';
+            }
+            listDiv.innerHTML = html;
+            
+            // 3. ★★★ 顯示備註 (如果有) ★★★
+            if (lastOrder.note && lastOrder.note.trim() !== "") {
+                document.getElementById('noteDisplay').style.display = 'block';
+                document.getElementById('noteText').innerText = lastOrder.note;
+            }
+
+            document.getElementById('receiptTotal').innerText = `NT$ ${lastOrder.total}`;
+        }
+    </script>
+</body>
+</html>

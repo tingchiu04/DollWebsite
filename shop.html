@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>線上商城 | 布偶日和</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    <style>
+        @font-face { font-family: 'OpenHuninn'; src: url('jf-openhuninn-2.0.ttf') format('truetype'); }
+        :root {
+            --color-purple: #cdb4db; --color-pink-light: #ffc8dd; --color-pink-hot: #ffafcc;
+            --color-blue-light: #bde0fe; --text-color: #5a4a4a;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'OpenHuninn', sans-serif; margin: 0; padding: 0;
+            background-color: #fdf0f5; color: var(--text-color);
+            padding-bottom: 100px;
+        }
+
+        /* Header & Back Link */
+        header {
+            background: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100;
+        }
+        .back-link { text-decoration: none; color: var(--text-color); font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .page-title { color: var(--color-pink-hot); font-weight: bold; font-size: 1.2rem; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        
+        /* Grid Layout */
+        .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+        @media(min-width: 768px) { .shop-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; } }
+
+        .product-card { 
+            background: white; border-radius: 15px; padding: 10px; border: 2px solid #eee; transition: 0.3s; 
+            cursor: pointer; display: flex; flex-direction: column;
+        }
+        .product-card:hover { border-color: var(--color-pink-hot); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .product-img { width: 100%; aspect-ratio: 1/1; background: #f9f9f9; border-radius: 10px; margin-bottom: 10px; object-fit: cover; }
+        .product-title { font-weight: bold; font-size: 1rem; margin-bottom: 5px; height: 2.8em; overflow: hidden; }
+        .product-price { color: var(--color-pink-hot); font-size: 1.1rem; font-weight: bold; }
+        .btn-view { margin-top: 10px; background: var(--color-blue-light); border: none; padding: 8px; border-radius: 5px; width: 100%; font-weight: bold; cursor: pointer; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 2000; display: none;
+            justify-content: center; align-items: center;
+        }
+        .modal-overlay.open { display: flex; }
+        
+        .modal-content {
+            background: white; width: 95%; max-width: 900px; max-height: 90vh;
+            border-radius: 20px; overflow-y: auto; padding: 0; position: relative;
+            display: flex; flex-direction: column;
+        }
+        @media(min-width: 768px) { .modal-content { flex-direction: row; overflow: hidden; height: auto; min-height: 500px; } }
+
+        .close-btn { position: absolute; top: 15px; right: 15px; font-size: 2rem; cursor: pointer; color: #aaa; z-index: 10; line-height: 1; }
+
+        /* 左側圖片區 (支援多圖) */
+        .detail-img-area { flex: 1; background: #f9f9f9; display: flex; flex-direction: column; padding: 20px; }
+        .main-img-box { flex: 1; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; overflow: hidden; border-radius: 10px; }
+        .main-img { max-width: 100%; max-height: 350px; object-fit: contain; }
+        
+        .thumbnail-list { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; justify-content: center; }
+        .thumb-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; cursor: pointer; border: 2px solid transparent; opacity: 0.6; transition: 0.2s; }
+        .thumb-img.active { border-color: var(--color-pink-hot); opacity: 1; transform: scale(1.05); }
+
+        /* 右側資訊區 */
+        .detail-info { flex: 1.2; padding: 30px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
+        .detail-title { font-size: 1.5rem; font-weight: bold; }
+        .detail-desc { font-size: 0.95rem; color: #666; background: #f9f9f9; padding: 15px; border-radius: 10px; line-height: 1.6; }
+        .detail-price { font-size: 1.8rem; color: var(--color-pink-hot); font-weight: bold; }
+        .option-select { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; }
+        
+        .qty-control { display: flex; align-items: center; gap: 15px; }
+        .qty-btn { width: 35px; height: 35px; border-radius: 50%; border: 1px solid #ddd; background: white; cursor: pointer; }
+        .qty-input { width: 50px; text-align: center; border: none; font-size: 1.2rem; font-weight: bold; }
+        .btn-add-cart { background: var(--color-pink-hot); color: white; border: none; padding: 15px; border-radius: 50px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: auto; }
+
+        /* Cart Drawer & Float Button */
+        .cart-drawer {
+            position: fixed; top: 0; right: -100%; width: 100%; max-width: 400px; height: 100%;
+            background: white; z-index: 2100; box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            transition: right 0.3s; display: flex; flex-direction: column;
+        }
+        .cart-drawer.open { right: 0; }
+        .cart-header { padding: 20px; background: var(--color-pink-hot); color: white; font-weight: bold; display: flex; justify-content: space-between; }
+        .cart-body { flex: 1; padding: 20px; overflow-y: auto; }
+        .cart-item { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px dashed #eee; padding-bottom: 15px; }
+        .cart-item-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
+        .cart-footer { padding: 20px; border-top: 1px solid #eee; }
+        .btn-checkout { width: 100%; background: var(--color-purple); color: white; padding: 15px; border: none; border-radius: 50px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
+        
+        .cart-float { position: fixed; bottom: 20px; right: 20px; background: var(--color-pink-hot); color: white; padding: 15px 25px; border-radius: 50px; cursor: pointer; z-index: 1000; display: flex; gap: 10px; font-weight: bold; box-shadow: 0 5px 20px rgba(255,107,107,0.4); }
+        .cart-badge { background: white; color: var(--color-pink-hot); padding: 2px 8px; border-radius: 50%; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="back-link">‹ 回首頁</a>
+        <div class="page-title">🛍️ 線上商城</div>
+        <div style="width: 60px;"></div>
+    </header>
+
+    <div class="container">
+        <div class="shop-grid" id="product-list"></div>
+    </div>
+
+    <div class="modal-overlay" id="productModal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-btn" onclick="closeModalDirect()">×</span>
+            
+            <div class="detail-img-area">
+                <div class="main-img-box">
+                    <img src="" class="main-img" id="modalMainImg">
+                </div>
+                <div class="thumbnail-list" id="modalThumbs">
+                    </div>
+            </div>
+
+            <div class="detail-info">
+                <div class="detail-title" id="modalTitle">商品名稱</div>
+                <div class="detail-price" id="modalPrice">NT$ 0</div>
+                <div class="detail-desc" id="modalDesc"></div>
+                
+                <div>
+                    <label style="font-weight:bold; display:block; margin-bottom:5px;">選擇規格</label>
+                    <select class="option-select" id="modalOption" onchange="updateModalPrice()"></select>
+                </div>
+
+                <div>
+                    <label style="font-weight:bold; display:block; margin-bottom:5px;">數量</label>
+                    <div class="qty-control">
+                        <button class="qty-btn" onclick="changeModalQty(-1)">-</button>
+                        <input type="text" class="qty-input" id="modalQty" value="1" readonly>
+                        <button class="qty-btn" onclick="changeModalQty(1)">+</button>
+                    </div>
+                </div>
+
+                <button class="btn-add-cart" onclick="addToCartFromModal()">加入購物車</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="cart-drawer" id="cartDrawer">
+        <div class="cart-header">
+            <span>🛒 購物車</span>
+            <span style="cursor: pointer; font-size: 1.5rem;" onclick="toggleCart()">×</span>
+        </div>
+        <div class="cart-body" id="cartList"></div>
+        <div class="cart-footer">
+            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem; margin-bottom: 15px;">
+                <span>總計</span><span id="drawerTotal">NT$ 0</span>
+            </div>
+            <button class="btn-checkout" onclick="goToCheckout()">前往結帳</button>
+        </div>
+    </div>
+
+    <div class="cart-float" onclick="toggleCart()">
+        <span>購物車</span><span class="cart-badge" id="floatCount">0</span>
+    </div>
+
+    <script>
+        // ★★★ 完整 12 項商品資料 (含多圖支援) ★★★
+        // 請確保資料夾內有 p1.jpg ~ p12.jpg
+        // ★★★ 商品資料設定 (多圖版) ★★★
+        const products = [
+            { 
+                id: 1, 
+                name: "絲光線一盒", 
+                // 絲光線如果也有色卡，也可以像這樣加進去
+                images: ["p1.jpg"], 
+                desc: "讓五官繡製起來更有光澤、立體感。<br>提供多種色系選擇。", 
+                basePrice: 200, 
+                options: [
+                    {name:"基礎常用色36種", price:200},
+                    {name:"紅色系36種", price:200},
+                    {name:"黃色系36種", price:200},
+                    {name:"棕色系36種", price:200},
+                    {name:"藍色系36種", price:200},
+                    {name:"綠色系36種", price:200},
+                    {name:"紫色系36種", price:200},
+                    {name:"特殊黑白色系36種", price:200},
+                    {name:"全252種 (大全套)", price:1350}
+                ] 
+            },
+            { 
+                id: 2, 
+                name: "5mm 水晶超柔布料", 
+                // ★ 修改這裡：加入 p2-color.jpg
+                images: ["p2.jpg", "p2-color.jpg"], 
+                desc: "<b>有毛流感的頭髮</b><br>尺寸：50x50cm / 一塊<br>⚠️ 請備註色號。", 
+                basePrice: 30, 
+                options: [{name:"一塊 (備註色號)", price:30}] 
+            },
+            { 
+                id: 3, 
+                name: "1mm 水晶超柔布料", 
+                // ★ 修改這裡：加入 p3-color.jpg
+                images: ["p3.jpg", "p2-color.jpg"], 
+                desc: "<b>皮膚布料 / 造型短髮</b><br>尺寸：50x50cm / 一塊<br>⚠️ 請備註色號。", 
+                basePrice: 30, 
+                options: [{name:"一塊 (備註色號)", price:30}] 
+            },
+            { 
+                id: 4, 
+                name: "長毛絨布料", 
+                // ★ 修改這裡：加入 p2-color.jpg
+                images: ["p4.jpg", "p2-color.jpg"], 
+                desc: "<b>製作長髮專用</b><br>尺寸：25x50cm / 一塊<br>⚠️ 請備註色號。", 
+                basePrice: 55, 
+                options: [{name:"一塊 (備註色號)", price:55}] 
+            },
+            { 
+                id: 5, 
+                name: "仿兔毛布料", 
+                // ★ 修改這裡：加入 p2-color.jpg
+                images: ["p5.jpg", "p2-color.jpg"], 
+                desc: "<b>特殊頭髮質感</b><br>尺寸：50x50cm / 一塊<br>⚠️ 請備註色號。", 
+                basePrice: 40, 
+                options: [{name:"一塊 (備註色號)", price:40}] 
+            },
+            { 
+                id: 6, 
+                name: "卷毛布料", 
+                // ★ 修改這裡：加入 p2-color.jpg
+                images: ["p6.jpg", "p2-color.jpg"], 
+                desc: "<b>特殊捲髮造型</b><br>尺寸：50x50cm / 一塊<br>⚠️ 請備註色號。", 
+                basePrice: 60, 
+                options: [{name:"一塊 (備註色號)", price:60}] 
+            },
+            { 
+                id: 7, 
+                name: "消色筆 (水消/熱消)", 
+                images: ["p7.jpg"], 
+                desc: "<b>畫五官或版型必備</b><br>水消：遇水即消<br>熱消：遇熱(吹風機)即消", 
+                basePrice: 30, 
+                options: [
+                    { name: "水消筆 - 紅色", price: 30 },
+                    { name: "水消筆 - 黑色", price: 30 },
+                    { name: "水消筆 - 藍色", price: 30 },
+                    { name: "水消筆 - 白色", price: 30 },
+                    { name: "熱消筆 - 紅色", price: 30 },
+                    { name: "熱消筆 - 黑色", price: 30 },
+                    { name: "熱消筆 - 藍色", price: 30 },
+                    { name: "熱消筆 - 白色", price: 30 }
+                ] 
+            },
+            { 
+                id: 8, 
+                name: "刺繡框", 
+                images: ["p8.jpg"], 
+                desc: "固定布料用，刺繡必備。", 
+                basePrice: 40, 
+                options: [
+                    {name:"4吋 (約10cm)", price:40},
+                    {name:"5吋 (約12cm)", price:40},
+                    {name:"6吋 (約15cm)", price:45},
+                    {name:"7吋 (約18cm)", price:45}
+                ] 
+            },
+            { 
+                id: 9, 
+                name: "水溶膜", 
+                images: ["p9.jpg"], 
+                desc: "描圖用，一包5張 (25x25cm)。", 
+                basePrice: 25, 
+                options: [{name:"一包 5 張", price:25}] 
+            },
+            { 
+                id: 10, 
+                name: "繡花針包", 
+                images: ["p10.jpg"], 
+                desc: "專用針具。<br>10號針：刺繡用 (細)<br>5號針：縫合用 (粗)", 
+                basePrice: 30, 
+                options: [
+                    {name:"10號繡花針 (刺繡)", price:30},
+                    {name:"5號繡花針 (縫合)", price:30}
+                ] 
+            },
+            { 
+                id: 11, 
+                name: "棉花 (珍珠棉)", 
+                images: ["p11.jpg"], 
+                desc: "填充專用高彈棉花。", 
+                basePrice: 75, 
+                options: [{name:"500克 / 包", price:75}] 
+            },
+            { 
+                id: 12, 
+                name: "新手一站到位材料包", 
+                images: ["p12.jpg"], 
+                desc: "<b>含可做兩隻20cm娃的材料 + 影片</b><br>內容：絲光線36色、5mm水晶絨x3、1mm皮膚色x1、熱消筆x1、6吋繡框、水溶膜、針包組、棉花500g、版型。", 
+                basePrice: 650, 
+                options: [{name:"標準新手套組", price:650}] 
+            }
+        ];
+
+        let cart = JSON.parse(localStorage.getItem('shopCart')) || [];
+        let currentProduct = null;
+
+        function initShop() {
+            document.getElementById('product-list').innerHTML = products.map(p => `
+                <div class="product-card" onclick="openModal(${p.id})">
+                    <img src="${p.images[0]}" class="product-img" onerror="this.src='https://placehold.co/400?text=No+Image'">
+                    <div class="product-title">${p.name}</div>
+                    <div class="product-price">NT$ ${p.basePrice} 起</div>
+                    <button class="btn-view">查看詳情</button>
+                </div>
+            `).join('');
+            updateCartIcon();
+        }
+
+        function openModal(id) {
+            currentProduct = products.find(p => p.id === id);
+            if(!currentProduct) return;
+
+            document.getElementById('modalTitle').innerText = currentProduct.name;
+            document.getElementById('modalDesc').innerHTML = currentProduct.desc;
+            
+            // --- 圖片邏輯 ---
+            const mainImg = document.getElementById('modalMainImg');
+            const thumbBox = document.getElementById('modalThumbs');
+            
+            mainImg.src = currentProduct.images[0]; // 預設第一張
+            
+            // 產生縮圖
+            if (currentProduct.images.length > 1) {
+                thumbBox.style.display = 'flex';
+                thumbBox.innerHTML = currentProduct.images.map((img, idx) => `
+                    <img src="${img}" class="thumb-img ${idx===0?'active':''}" onclick="switchImage('${img}', this)">
+                `).join('');
+            } else {
+                thumbBox.style.display = 'none';
+            }
+
+            const select = document.getElementById('modalOption');
+            select.innerHTML = currentProduct.options.map((opt, idx) => `<option value="${idx}" data-price="${opt.price}">${opt.name} - $${opt.price}</option>`).join('');
+            
+            document.getElementById('modalQty').value = 1;
+            updateModalPrice();
+            document.getElementById('productModal').classList.add('open');
+        }
+
+        function switchImage(src, element) {
+            document.getElementById('modalMainImg').src = src;
+            document.querySelectorAll('.thumb-img').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function closeModalDirect() { document.getElementById('productModal').classList.remove('open'); }
+        function closeModal(e) { if(e.target.classList.contains('modal-overlay')) closeModalDirect(); }
+        function updateModalPrice() {
+            const sel = document.getElementById('modalOption');
+            document.getElementById('modalPrice').innerText = `NT$ ${sel.options[sel.selectedIndex].dataset.price}`;
+        }
+        function changeModalQty(d) {
+            const ipt = document.getElementById('modalQty');
+            let v = parseInt(ipt.value) + d;
+            if(v < 1) v = 1;
+            ipt.value = v;
+        }
+        function addToCartFromModal() {
+            const idx = document.getElementById('modalOption').value;
+            const opt = currentProduct.options[idx];
+            const qty = parseInt(document.getElementById('modalQty').value);
+            
+            const exist = cart.find(i => i.id === currentProduct.id && i.option === opt.name);
+            if(exist) exist.qty += qty;
+            else cart.push({ id: currentProduct.id, name: currentProduct.name, img: currentProduct.images[0], option: opt.name, price: opt.price, qty: qty });
+            
+            saveCart(); closeModalDirect(); toggleCart(true);
+        }
+
+        function toggleCart(forceOpen) {
+            const drawer = document.getElementById('cartDrawer');
+            if(forceOpen || !drawer.classList.contains('open')) {
+                drawer.classList.add('open'); renderCartList();
+            } else drawer.classList.remove('open');
+        }
+        function renderCartList() {
+            const list = document.getElementById('cartList');
+            let total = 0;
+            if(cart.length === 0) { list.innerHTML = '<p style="text-align:center;color:#888;margin-top:20px;">空的</p>'; }
+            else {
+                list.innerHTML = cart.map((item, i) => {
+                    total += item.price * item.qty;
+                    return `
+                    <div class="cart-item">
+                        <img src="${item.img}" class="cart-item-img">
+                        <div style="flex:1">
+                            <div>${item.name}</div>
+                            <div style="font-size:0.85rem;color:#888;">${item.option}</div>
+                            <div style="color:var(--color-pink-hot);font-weight:bold;">$${item.price}</div>
+                            <div style="margin-top:5px;">
+                                <button onclick="updateCartItem(${i}, -1)">-</button> ${item.qty} <button onclick="updateCartItem(${i}, 1)">+</button> 
+                                <span style="font-size:0.8rem;margin-left:10px;cursor:pointer;" onclick="removeCartItem(${i})">移除</span>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+            document.getElementById('drawerTotal').innerText = `NT$ ${total}`;
+        }
+        function updateCartItem(i, d) { cart[i].qty += d; if(cart[i].qty < 1) cart[i].qty = 1; saveCart(); renderCartList(); }
+        function removeCartItem(i) { cart.splice(i, 1); saveCart(); renderCartList(); }
+        function saveCart() { localStorage.setItem('shopCart', JSON.stringify(cart)); updateCartIcon(); }
+        function updateCartIcon() { document.getElementById('floatCount').innerText = cart.reduce((s,i)=>s+i.qty,0); }
+        
+        function goToCheckout() {
+            if(cart.length === 0) { alert('購物車是空的'); return; }
+            localStorage.removeItem('bookingData'); // 清除預約資料，純購物
+            window.location.href = 'payment.html';
+        }
+        initShop();
+    </script>
+</body>
+</html>

@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <link rel="icon" href="logo.png" type="image/png">
+
+    <title>布偶日和：親手製作我的他！</title>
+    <style>
+        /* --- 1. 載入粉圓字體 --- */
+        @font-face {
+            font-family: 'OpenHuninn';
+            src: url('jf-openhuninn-2.0.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* --- 變數定義 --- */
+        :root {
+            --c-purple: #cdb4db;
+            --c-pink-light: #ffc8dd;
+            --c-pink-hot: #ffafcc;
+            --c-blue-light: #bde0fe;
+            --c-blue: #a2d2ff;
+            --c-text: #555;
+            --c-white: #ffffff;
+            --c-gray-light: #f0f0f0;
+        }
+
+        /* --- 全局設定 --- */
+        body {
+            font-family: 'OpenHuninn', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, var(--c-purple), var(--c-blue-light));
+            margin: 0;
+            padding: 0;
+            color: var(--c-text);
+            height: 100vh;
+            height: 100dvh; 
+            overflow: hidden; 
+        }
+
+        .container {
+            display: flex;
+            height: 100%;
+            width: 100vw;
+            backdrop-filter: blur(5px);
+        }
+
+        /* --- 左側畫布區 --- */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        canvas {
+            max-height: 90vh; 
+            max-width: 100%;
+            height: auto;
+            width: auto;
+            object-fit: contain;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(162, 210, 255, 0.5);
+            background-color: var(--c-white);
+            background-image: linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+            background-size: 20px 20px;
+        }
+
+        /* --- 右側控制區 --- */
+        .controls-panel {
+            width: 420px;
+            background: var(--c-white);
+            display: flex;
+            flex-direction: column;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.1);
+            z-index: 10;
+            position: relative;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between; 
+            align-items: center;
+            padding: 15px 20px;
+            background: var(--c-white);
+            border-bottom: 2px dashed var(--c-pink-light);
+            flex-shrink: 0; 
+        }
+
+        h2 { 
+            margin: 0; 
+            color: var(--c-purple); 
+            font-size: 20px;
+            letter-spacing: 1px;
+        }
+
+        .btn-save-mini {
+            padding: 8px 15px; 
+            background: linear-gradient(to right, var(--c-pink-hot), var(--c-pink-light));
+            color: white;
+            border: none; 
+            border-radius: 20px; 
+            font-size: 14px;
+            font-family: 'OpenHuninn';
+            font-weight: bold; 
+            cursor: pointer; 
+            box-shadow: 0 2px 8px rgba(255, 175, 204, 0.4);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-save-mini::before { content: '❤'; } 
+        .btn-save-mini:hover { transform: scale(1.05); }
+        .btn-save-mini:active { transform: scale(0.95); }
+
+
+        /* Tabs */
+        .tabs-nav {
+            display: flex;
+            background: var(--c-blue-light);
+            padding: 10px 5px 0 5px;
+            overflow-x: auto; 
+            flex-shrink: 0; 
+        }
+        
+        .tab-btn {
+            padding: 10px 15px;
+            margin: 0 3px;
+            background: rgba(255,255,255,0.5);
+            border: none;
+            border-radius: 12px 12px 0 0;
+            font-family: 'OpenHuninn';
+            font-size: 15px;
+            color: var(--c-text);
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            background: var(--c-white);
+            color: var(--c-pink-hot);
+            font-weight: bold;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+        }
+
+        /* Content */
+        .tab-content {
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 20px;
+            position: relative;
+            padding-bottom: 80px; 
+        }
+
+        .tab-pane { display: none; animation: fadeIn 0.3s; }
+        .tab-pane.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Grid Items */
+        .section-title {
+            font-size: 14px;
+            color: var(--c-blue);
+            margin-bottom: 10px;
+            border-bottom: 2px dashed var(--c-pink-light);
+            padding-bottom: 5px;
+            margin-top: 20px;
+        }
+        .section-title:first-child { margin-top: 0; }
+
+        .item-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .item-btn {
+            aspect-ratio: 1;
+            background: var(--c-gray-light);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'OpenHuninn';
+            font-size: 16px; 
+            color: #888;
+            transition: all 0.2s;
+        }
+
+        .item-btn:hover { background: var(--c-pink-light); color: white; }
+
+        .item-btn.selected {
+            border-color: var(--c-pink-hot);
+            background: #fff0f5;
+            color: var(--c-pink-hot);
+            font-weight: bold;
+            box-shadow: 0 0 0 2px var(--c-pink-hot);
+        }
+
+        /* Color Control */
+        .color-control-area {
+            background: #f9f9ff;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--c-blue-light);
+            margin-bottom: 20px;
+            display: block; 
+        }
+        
+        .hidden-control { display: none; }
+
+        .color-preview {
+            width: 100%; height: 25px; border-radius: 8px;
+            border: 2px solid white; 
+            box-shadow: 0 0 0 1px #eee;
+            margin-bottom: 10px; background: #ccc;
+        }
+
+        /* Hybrid Slider Controls */
+        .slider-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .slider-label { 
+            font-size: 14px; 
+            width: 30px; 
+            color: #888; 
+            font-weight: bold; 
+            flex-shrink: 0;
+        }
+        
+        input[type=range] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 6px;
+            background: var(--c-blue-light);
+            border-radius: 5px;
+            outline: none;
+            cursor: pointer;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--c-pink-hot);
+            border: 3px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        .adjust-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--c-white);
+            border: 1px solid var(--c-blue-light);
+            color: var(--c-blue);
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s;
+            touch-action: manipulation; 
+        }
+        .adjust-btn:hover { background: var(--c-blue-light); color: white; }
+        .adjust-btn:active { transform: scale(0.9); }
+
+        /* Position Control */
+        .position-control-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .pos-btn {
+            flex: 1;
+            padding: 8px;
+            background: var(--c-white);
+            border: 2px solid var(--c-blue-light);
+            border-radius: 8px;
+            color: var(--c-blue);
+            font-family: 'OpenHuninn';
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .pos-btn:hover { background: var(--c-blue-light); color: white; }
+        .pos-btn:active { transform: scale(0.95); }
+
+        @media (max-width: 768px) {
+            .container { flex-direction: column; }
+            
+            .canvas-area {
+                width: 100%;
+                aspect-ratio: 1 / 1; 
+                max-height: 50vh; 
+                flex: none;
+                padding: 15px;
+                box-sizing: border-box;
+                background: rgba(255,255,255,0.3);
+            }
+
+            canvas {
+                width: 100%;
+                height: 100%;
+                object-fit: contain; 
+                max-height: none; 
+            }
+
+            .controls-panel {
+                width: 100%;
+                flex: 1;
+                height: auto;
+                border-top-left-radius: 20px;
+                border-top-right-radius: 20px;
+                overflow: hidden;
+            }
+
+            .tabs-nav { padding-top: 5px; }
+            .tab-btn { padding: 8px 12px; font-size: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="canvas-area">
+        <canvas id="avatarCanvas" width="1640" height="2360"></canvas>
+    </div>
+
+    <div class="controls-panel">
+        
+        <div class="panel-header">
+            <h2>✨ 娃稿產生器</h2>
+            <button class="btn-save-mini" onclick="saveImage()">完成下載</button>
+        </div>
+
+        <div class="tabs-nav">
+            <button class="tab-btn active" onclick="switchTab('tab-body')">身體</button>
+            <button class="tab-btn" onclick="switchTab('tab-hair')">頭髮</button>
+            <button class="tab-btn" onclick="switchTab('tab-eyes')">眼睛</button>
+            <button class="tab-btn" onclick="switchTab('tab-eyebrow')">眉毛</button>
+            <button class="tab-btn" onclick="switchTab('tab-face')">五官</button>
+            <button class="tab-btn" onclick="switchTab('tab-bg')">背景</button>
+        </div>
+
+        <div class="tab-content">
+            <div id="tab-body" class="tab-pane active">
+                <div class="section-title">膚色選擇</div>
+                <div class="item-grid">
+                    <div class="item-btn selected" onclick="selectItem('body', '1')" id="btn-body-1">白皙</div>
+                    <div class="item-btn" onclick="selectItem('body', '2')" id="btn-body-2">健康</div>
+                    <div class="item-btn" onclick="selectItem('body', '3')" id="btn-body-3">自訂</div>
+                </div>
+
+                <div id="bodyColorControl" class="color-control-area hidden-control">
+                    <div class="section-title">自訂膚色調整</div>
+                    <div id="bodyPreview" class="color-preview"></div>
+                    
+                    <div class="slider-wrapper">
+                        <span class="slider-label">色相</span>
+                        <button class="adjust-btn" onclick="adjustValue('bodyH', -5, 'body')">-</button>
+                        <input type="range" id="bodyH" min="0" max="360" value="25" oninput="updateColor('body')">
+                        <button class="adjust-btn" onclick="adjustValue('bodyH', 5, 'body')">+</button>
+                    </div>
+                    <div class="slider-wrapper">
+                        <span class="slider-label">彩度</span>
+                        <button class="adjust-btn" onclick="adjustValue('bodyS', -5, 'body')">-</button>
+                        <input type="range" id="bodyS" min="0" max="100" value="80" oninput="updateColor('body')">
+                        <button class="adjust-btn" onclick="adjustValue('bodyS', 5, 'body')">+</button>
+                    </div>
+                    <div class="slider-wrapper">
+                        <span class="slider-label">亮度</span>
+                        <button class="adjust-btn" onclick="adjustValue('bodyL', -5, 'body')">-</button>
+                        <input type="range" id="bodyL" min="0" max="100" value="90" oninput="updateColor('body')">
+                        <button class="adjust-btn" onclick="adjustValue('bodyL', 5, 'body')">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-hair" class="tab-pane">
+                <div class="section-title">髮型樣式</div>
+                <div class="item-grid">
+                    <div class="item-btn selected" onclick="selectItem('hairShape', '1')" id="btn-hairShape-1">1</div>
+                    <div class="item-btn" onclick="selectItem('hairShape', '2')" id="btn-hairShape-2">2</div>
+                    <div class="item-btn" onclick="selectItem('hairShape', '3')" id="btn-hairShape-3">3</div>
+                    <div class="item-btn" onclick="selectItem('hairShape', '4')" id="btn-hairShape-4">4</div>
+                    <div class="item-btn" onclick="selectItem('hairShape', '5')" id="btn-hairShape-5">5</div>
+                    <div class="item-btn" onclick="selectItem('hairShape', '6')" id="btn-hairShape-6">6</div>
+                    <div class="item-btn" onclick="selectItem('hairShape', '7')" id="btn-hairShape-7">7</div>
+                    <div class="item-btn" onclick="selectItem('hairShape', '8')" id="btn-hairShape-8">8</div>
+                    <div class="item-btn" onclick="selectItem('hairShape', '9')" id="btn-hairShape-9">9</div>
+                    <div class="item-btn" onclick="selectItem('hairShape', '10')" id="btn-hairShape-10">10</div>
+                    <div class="item-btn" onclick="selectItem('hairShape', '11')" id="btn-hairShape-11">11</div>
+                    <div class="item-btn" onclick="selectItem('hairShape', '12')" id="btn-hairShape-12">12</div>
+                    <div class="item-btn" onclick="selectItem('hairShape', '13')" id="btn-hairShape-13">13</div>
+                </div>
+                <div class="section-title">髮色調整</div>
+                <div class="color-control-area">
+                    <div id="hairPreview" class="color-preview"></div>
+                    <div class="slider-wrapper">
+                        <span class="slider-label">色相</span>
+                        <button class="adjust-btn" onclick="adjustValue('hairH', -5, 'hair')">-</button>
+                        <input type="range" id="hairH" min="0" max="360" value="309" oninput="updateColor('hair')">
+                        <button class="adjust-btn" onclick="adjustValue('hairH', 5, 'hair')">+</button>
+                    </div>
+                    <div class="slider-wrapper">
+                        <span class="slider-label">彩度</span>
+                        <button class="adjust-btn" onclick="adjustValue('hairS', -5, 'hair')">-</button>
+                        <input type="range" id="hairS" min="0" max="100" value="7" oninput="updateColor('hair')">
+                        <button class="adjust-btn" onclick="adjustValue('hairS', 5, 'hair')">+</button>
+                    </div>
+                    <div class="slider-wrapper">
+                        <span class="slider-label">亮度</span>
+                        <button class="adjust-btn" onclick="adjustValue('hairL', -5, 'hair')">-</button>
+                        <input type="range" id="hairL" min="0" max="100" value="58" oninput="updateColor('hair')">
+                        <button class="adjust-btn" onclick="adjustValue('hairL', 5, 'hair')">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-eyes" class="tab-pane">
+                <div class="section-title">眼睛形狀</div>
+                <div class="item-grid">
+                    <div class="item-btn selected" onclick="selectItem('eyeShape', '1')" id="btn-eyeShape-1">1</div>
+                    <div class="item-btn" onclick="selectItem('eyeShape', '2')" id="btn-eyeShape-2">2</div>
+                    <div class="item-btn" onclick="selectItem('eyeShape', '3')" id="btn-eyeShape-3">3</div>
+                    <div class="item-btn" onclick="selectItem('eyeShape', '4')" id="btn-eyeShape-4">4</div>
+                    <div class="item-btn" onclick="selectItem('eyeShape', '5')" id="btn-eyeShape-5">5</div>
+                    <div class="item-btn" onclick="selectItem('eyeShape', '6')" id="btn-eyeShape-6">6</div>
+                    <div class="item-btn" onclick="selectItem('eyeShape', '7')" id="btn-eyeShape-7">7</div>
+                </div>
+
+                <div class="section-title">位置微調</div>
+                <div class="position-control-area">
+                    <button class="pos-btn" onclick="moveLayer('eye', -5)">↑ 上移</button>
+                    <button class="pos-btn" onclick="moveLayer('eye', 5)">↓ 下移</button>
+                </div>
+
+                <div class="section-title">高光樣式</div>
+                <div class="item-grid">
+                    <div class="item-btn selected" onclick="selectItem('highlight', '1')" id="btn-highlight-1">1</div>
+                    <div class="item-btn" onclick="selectItem('highlight', '2')" id="btn-highlight-2">2</div>
+                    <div class="item-btn" onclick="selectItem('highlight', '3')" id="btn-highlight-3">3</div>
+                    <div class="item-btn" onclick="selectItem('highlight', '4')" id="btn-highlight-4">4</div>
+                    <div class="item-btn" onclick="selectItem('highlight', '5')" id="btn-highlight-5">5</div>
+                    <div class="item-btn" onclick="selectItem('highlight', '6')" id="btn-highlight-6">6</div>
+                    <div class="item-btn" onclick="selectItem('highlight', '7')" id="btn-highlight-7">7</div>
+                </div>
+
+                <div class="section-title">高光位置微調</div>
+                <div class="position-control-area">
+                    <button class="pos-btn" onclick="moveLayer('highlight', -5)">↑ 上移</button>
+                    <button class="pos-btn" onclick="moveLayer('highlight', 5)">↓ 下移</button>
+                </div>
+
+                <div class="section-title">瞳孔顏色</div>
+                <div class="color-control-area">
+                    <div id="eyePreview" class="color-preview"></div>
+                    <div class="slider-wrapper">
+                        <span class="slider-label">色相</span>
+                        <button class="adjust-btn" onclick="adjustValue('eyeH', -5, 'eye')">-</button>
+                        <input type="range" id="eyeH" min="0" max="360" value="309" oninput="updateColor('eye')">
+                        <button class="adjust-btn" onclick="adjustValue('eyeH', 5, 'eye')">+</button>
+                    </div>
+                    <div class="slider-wrapper">
+                        <span class="slider-label">彩度</span>
+                        <button class="adjust-btn" onclick="adjustValue('eyeS', -5, 'eye')">-</button>
+                        <input type="range" id="eyeS" min="0" max="100" value="7" oninput="updateColor('eye')">
+                        <button class="adjust-btn" onclick="adjustValue('eyeS', 5, 'eye')">+</button>
+                    </div>
+                    <div class="slider-wrapper">
+                        <span class="slider-label">亮度</span>
+                        <button class="adjust-btn" onclick="adjustValue('eyeL', -5, 'eye')">-</button>
+                        <input type="range" id="eyeL" min="0" max="100" value="58" oninput="updateColor('eye')">
+                        <button class="adjust-btn" onclick="adjustValue('eyeL', 5, 'eye')">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-eyebrow" class="tab-pane">
+                <div class="section-title">眉毛樣式</div>
+                <div class="item-grid">
+                    <div class="item-btn selected" onclick="selectItem('eyebrowShape', '1')" id="btn-eyebrowShape-1">1</div>
+                    <div class="item-btn" onclick="selectItem('eyebrowShape', '2')" id="btn-eyebrowShape-2">2</div>
+                    <div class="item-btn" onclick="selectItem('eyebrowShape', '3')" id="btn-eyebrowShape-3">3</div>
+                    <div class="item-btn" onclick="selectItem('eyebrowShape', '4')" id="btn-eyebrowShape-4">4</div>
+                    <div class="item-btn" onclick="selectItem('eyebrowShape', '5')" id="btn-eyebrowShape-5">5</div>
+                </div>
+
+                <div class="section-title">位置微調</div>
+                <div class="position-control-area">
+                    <button class="pos-btn" onclick="moveLayer('eyebrow', -5)">↑ 上移</button>
+                    <button class="pos-btn" onclick="moveLayer('eyebrow', 5)">↓ 下移</button>
+                </div>
+
+                <div class="section-title">眉毛顏色</div>
+                <div class="color-control-area">
+                    <div id="eyebrowPreview" class="color-preview"></div>
+                    <div class="slider-wrapper">
+                        <span class="slider-label">色相</span>
+                        <button class="adjust-btn" onclick="adjustValue('eyebrowH', -5, 'eyebrow')">-</button>
+                        <input type="range" id="eyebrowH" min="0" max="360" value="309" oninput="updateColor('eyebrow')">
+                        <button class="adjust-btn" onclick="adjustValue('eyebrowH', 5, 'eyebrow')">+</button>
+                    </div>
+                    <div class="slider-wrapper">
+                        <span class="slider-label">彩度</span>
+                        <button class="adjust-btn" onclick="adjustValue('eyebrowS', -5, 'eyebrow')">-</button>
+                        <input type="range" id="eyebrowS" min="0" max="100" value="7" oninput="updateColor('eyebrow')">
+                        <button class="adjust-btn" onclick="adjustValue('eyebrowS', 5, 'eyebrow')">+</button>
+                    </div>
+                    <div class="slider-wrapper">
+                        <span class="slider-label">亮度</span>
+                        <button class="adjust-btn" onclick="adjustValue('eyebrowL', -5, 'eyebrow')">-</button>
+                        <input type="range" id="eyebrowL" min="0" max="100" value="58" oninput="updateColor('eyebrow')">
+                        <button class="adjust-btn" onclick="adjustValue('eyebrowL', 5, 'eyebrow')">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-face" class="tab-pane">
+                <div class="section-title">嘴巴與鼻子</div>
+                <div class="item-grid">
+                    <div class="item-btn selected" onclick="selectItem('nosemouth', '1')" id="btn-nosemouth-1">1</div>
+                    <div class="item-btn" onclick="selectItem('nosemouth', '2')" id="btn-nosemouth-2">2</div>
+                    <div class="item-btn" onclick="selectItem('nosemouth', '3')" id="btn-nosemouth-3">3</div>
+                    <div class="item-btn" onclick="selectItem('nosemouth', '4')" id="btn-nosemouth-4">4</div>
+                    <div class="item-btn" onclick="selectItem('nosemouth', '5')" id="btn-nosemouth-5">5</div>
+                    <div class="item-btn" onclick="selectItem('nosemouth', '6')" id="btn-nosemouth-6">6</div>
+                    <div class="item-btn" onclick="selectItem('nosemouth', '7')" id="btn-nosemouth-7">7</div>
+                    <div class="item-btn" onclick="selectItem('nosemouth', '8')" id="btn-nosemouth-8">8</div>
+                    <div class="item-btn" onclick="selectItem('nosemouth', '9')" id="btn-nosemouth-9">9</div>
+                    <div class="item-btn" onclick="selectItem('nosemouth', '10')" id="btn-nosemouth-10">10</div>
+                    <div class="item-btn" onclick="selectItem('nosemouth', '11')" id="btn-nosemouth-11">11</div>
+                    <div class="item-btn" onclick="selectItem('nosemouth', '12')" id="btn-nosemouth-12">12</div>
+                </div>
+
+                <div class="section-title">位置微調</div>
+                <div class="position-control-area">
+                    <button class="pos-btn" onclick="moveLayer('nosemouth', -5)">↑ 上移</button>
+                    <button class="pos-btn" onclick="moveLayer('nosemouth', 5)">↓ 下移</button>
+                </div>
+            </div>
+
+            <div id="tab-bg" class="tab-pane">
+                <div class="section-title">背景類型</div>
+                <div class="item-grid">
+                    <div class="item-btn selected" onclick="selectItem('bgStyle', 'color')" id="btn-bgStyle-color">純色</div>
+                    <div class="item-btn" onclick="selectItem('bgStyle', 'transparent')" id="btn-bgStyle-transparent">透明</div>
+                </div>
+
+                <div id="bgColorControl" class="color-control-area">
+                    <div class="section-title">背景顏色</div>
+                    <div id="bgPreview" class="color-preview"></div>
+                    <div class="slider-wrapper">
+                        <span class="slider-label">色相</span>
+                        <button class="adjust-btn" onclick="adjustValue('bgH', -5, 'bg')">-</button>
+                        <input type="range" id="bgH" min="0" max="360" value="40" oninput="updateColor('bg')">
+                        <button class="adjust-btn" onclick="adjustValue('bgH', 5, 'bg')">+</button>
+                    </div>
+                    <div class="slider-wrapper">
+                        <span class="slider-label">彩度</span>
+                        <button class="adjust-btn" onclick="adjustValue('bgS', -5, 'bg')">-</button>
+                        <input type="range" id="bgS" min="0" max="100" value="100" oninput="updateColor('bg')">
+                        <button class="adjust-btn" onclick="adjustValue('bgS', 5, 'bg')">+</button>
+                    </div>
+                    <div class="slider-wrapper">
+                        <span class="slider-label">亮度</span>
+                        <button class="adjust-btn" onclick="adjustValue('bgL', -5, 'bg')">-</button>
+                        <input type="range" id="bgL" min="0" max="100" value="97" oninput="updateColor('bg')">
+                        <button class="adjust-btn" onclick="adjustValue('bgL', 5, 'bg')">+</button>
+                    </div>
+                </div>
+            </div>
+
+        </div> </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('avatarCanvas');
+    const ctx = canvas.getContext('2d');
+    const images = {};
+
+    const avatarState = {
+        body: '1',
+        hairShape: '1',
+        eyeShape: '1',
+        eyebrowShape: '1',
+        nosemouth: '1',
+        highlight: '1',
+        eyeY: 0,
+        eyebrowY: 0,
+        nosemouthY: 0, // 新增
+        highlightY: 0, // 新增
+        bgStyle: 'color'
+    };
+
+    const colorState = {
+        eyebrow: { h: 309, s: 7, l: 58 },
+        eye:     { h: 309, s: 7, l: 58 },
+        hair:    { h: 309, s: 7, l: 58 },
+        body:    { h: 25,  s: 80, l: 90 },
+        bg:      { h: 40, s: 100, l: 97 }
+    };
+
+    const layerOrder = [
+        { type: 'normal', id: 'body' },
+        { type: 'normal', id: 'nosemouth' },
+        { type: 'normal', id: 'eye_base' },
+        { type: 'tint',   id: 'eye_iris', colorType: 'eye' },
+        { type: 'normal', id: 'highlight' },
+        { type: 'tint',   id: 'hair',     colorType: 'hair' },    
+        { type: 'tint',   id: 'eyebrow',  colorType: 'eyebrow' }
+    ];
+
+    function loadImage(src) {
+        return new Promise((resolve) => {
+            if (images[src]) return resolve(images[src]);
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.onload = () => { images[src] = img; resolve(img); };
+            img.onerror = () => { console.warn('Missing:', src); resolve(null); };
+            img.src = src;
+        });
+    }
+
+    function getLayerData(layer) {
+        const id = layer.id;
+        
+        if (id === 'body') {
+            if (avatarState.body === '3') return { url: `img/body_3.png`, colorType: 'body' };
+            return { url: `img/body_${avatarState.body}.png` };
+        }
+        if (id === 'eye_base') return { url: `img/eye_base_${avatarState.eyeShape}.png` };
+        if (id === 'eye_iris') return { url: `img/eye_iris_${avatarState.eyeShape}.png` };
+        if (id === 'eyebrow') return { url: `img/eyebrow_${avatarState.eyebrowShape}.png` };
+        if (id === 'hair') return { url: `img/hair_${avatarState.hairShape}.png` };
+        if (id === 'nosemouth') return { url: `img/nosemouth_${avatarState.nosemouth}.png` };
+        if (id === 'highlight') return { url: `img/highlight_${avatarState.highlight}.png` };
+        return null;
+    }
+
+    function drawTintedImage(img, hslString, yOffset = 0) {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+
+        tempCtx.drawImage(img, 0, yOffset, canvas.width, canvas.height);
+        tempCtx.globalCompositeOperation = 'multiply';
+        tempCtx.fillStyle = hslString;
+        tempCtx.fillRect(0, 0, canvas.width, canvas.height);
+        tempCtx.globalCompositeOperation = 'destination-in';
+        tempCtx.drawImage(img, 0, yOffset, canvas.width, canvas.height);
+
+        ctx.drawImage(tempCanvas, 0, 0);
+    }
+
+    async function redraw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        if (avatarState.bgStyle === 'color') {
+            const bg = colorState.bg;
+            ctx.fillStyle = `hsl(${bg.h}, ${bg.s}%, ${bg.l}%)`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        for (let layer of layerOrder) {
+            const data = getLayerData(layer);
+            if (!data) continue;
+
+            const img = await loadImage(data.url);
+            if (!img) continue;
+
+            let yOffset = 0;
+            // 眼睛相關：跟隨 eyeY
+            if (['eye_base', 'eye_iris'].includes(layer.id)) {
+                yOffset = avatarState.eyeY;
+            }
+            // 高光：跟隨 eyeY + 自己的微調 highlightY
+            if (layer.id === 'highlight') {
+                yOffset = avatarState.eyeY + avatarState.highlightY;
+            }
+            // 眉毛
+            if (layer.id === 'eyebrow') {
+                yOffset = avatarState.eyebrowY;
+            }
+            // 嘴鼻 (新增)
+            if (layer.id === 'nosemouth') {
+                yOffset = avatarState.nosemouthY;
+            }
+
+            const colorType = layer.colorType || data.colorType;
+
+            if ((layer.type === 'tint' && colorType) || colorType) {
+                const c = colorState[colorType];
+                const hslString = `hsl(${c.h}, ${c.s}%, ${c.l}%)`;
+                drawTintedImage(img, hslString, yOffset);
+            } else {
+                ctx.drawImage(img, 0, yOffset, canvas.width, canvas.height);
+            }
+        }
+    }
+
+    function updateColor(type) {
+        const h = document.getElementById(type + 'H').value;
+        const s = document.getElementById(type + 'S').value;
+        const l = document.getElementById(type + 'L').value;
+
+        colorState[type] = { h, s, l };
+        const hslString = `hsl(${h}, ${s}%, ${l}%)`;
+        document.getElementById(type + 'Preview').style.backgroundColor = hslString;
+        redraw();
+    }
+
+    function adjustValue(inputId, delta, type) {
+        const input = document.getElementById(inputId);
+        let val = parseInt(input.value) + delta;
+        const min = parseInt(input.min);
+        const max = parseInt(input.max);
+        if (val < min) val = min;
+        if (val > max) val = max;
+        input.value = val;
+        updateColor(type);
+    }
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    function selectItem(category, id) {
+        avatarState[category] = id;
+        const buttons = document.querySelectorAll(`[id^="btn-${category}-"]`);
+        buttons.forEach(btn => btn.classList.remove('selected'));
+        const targetBtn = document.getElementById(`btn-${category}-${id}`);
+        if(targetBtn) targetBtn.classList.add('selected');
+        
+        if (category === 'body') {
+            const controlDiv = document.getElementById('bodyColorControl');
+            if (id === '3') controlDiv.classList.remove('hidden-control'); 
+            else controlDiv.classList.add('hidden-control'); 
+        }
+
+        if (category === 'bgStyle') {
+            const controlDiv = document.getElementById('bgColorControl');
+            if (id === 'color') controlDiv.classList.remove('hidden-control');
+            else controlDiv.classList.add('hidden-control');
+        }
+
+        redraw();
+    }
+
+    function moveLayer(type, delta) {
+        const stateKey = type + 'Y'; 
+        let newValue = avatarState[stateKey] + delta;
+        const limit = 50; 
+        if (newValue > limit) newValue = limit;
+        if (newValue < -limit) newValue = -limit;
+        avatarState[stateKey] = newValue;
+        redraw();
+    }
+
+    async function saveImage() {
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+
+        tempCtx.drawImage(canvas, 0, 0);
+
+        try {
+            const watermark = await loadImage('img/watermark.png');
+            if (watermark) {
+                tempCtx.drawImage(watermark, 0, 0, canvas.width, canvas.height);
+            }
+        } catch (e) {
+            console.error("Watermark missing");
+        }
+
+        const link = document.createElement('a');
+        link.download = 'my_character.png';
+        link.href = tempCanvas.toDataURL('image/png');
+        link.click();
+    }
+
+    window.onload = () => {
+        ['hair', 'eye', 'eyebrow', 'body', 'bg'].forEach(type => {
+            const c = colorState[type];
+            const el = document.getElementById(type + 'Preview');
+            if(el) el.style.backgroundColor = `hsl(${c.h}, ${c.s}%, ${c.l}%)`;
+        });
+        redraw();
+    };
+</script>
+</body>
+</html>

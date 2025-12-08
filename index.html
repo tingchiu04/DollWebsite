@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>布偶日和 | 專屬手作訂製</title>
+    <link rel="icon" href="logo.png" type="image/png">
+    
+    <style>
+        /* --- 字體與基礎設定 --- */
+        @font-face { font-family: 'OpenHuninn'; src: url('jf-openhuninn-2.0.ttf') format('truetype'); }
+        :root {
+            --color-purple: #cdb4db; --color-pink-light: #ffc8dd; --color-pink-hot: #ffafcc;
+            --color-blue-light: #bde0fe; --color-blue-sky: #a2d2ff; --text-color: #5a4a4a;
+            --white-glass: rgba(255, 255, 255, 0.95);
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'OpenHuninn', sans-serif; margin: 0; padding: 0;
+            background: linear-gradient(135deg, var(--color-blue-light) 0%, var(--color-pink-light) 100%);
+            color: var(--text-color); line-height: 1.7; background-attachment: fixed;
+        }
+        a { text-decoration: none; color: inherit; transition: 0.3s; }
+        
+        /* --- 導覽列 --- */
+        header {
+            background: rgba(255, 255, 255, 0.98); padding: 1rem 2rem; position: sticky; top: 0; z-index: 1000;
+            box-shadow: 0 4px 20px rgba(162, 210, 255, 0.3); display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 3px solid var(--color-pink-hot);
+        }
+        .logo { font-size: 1.5rem; color: var(--color-pink-hot); font-weight: bold; white-space: nowrap; display: flex; align-items: center; gap: 10px;}
+        .logo img { height: 40px; width: 40px; border-radius: 50%; object-fit: cover; }
+        
+        nav ul { display: flex; gap: 15px; align-items: center; list-style: none; margin: 0; padding: 0; }
+        nav a { font-size: 1rem; color: #777; font-weight: bold; white-space: nowrap; }
+        nav a:hover { color: var(--color-blue-sky); }
+        .btn-nav { background: var(--color-pink-hot); color: white !important; padding: 8px 20px; border-radius: 50px; }
+
+        /* --- 輪播圖 --- */
+        .carousel-container { width: 100%; height: 500px; position: relative; overflow: hidden; background: #fff; }
+        .carousel-slide { position: absolute; width: 100%; height: 100%; opacity: 0; transition: opacity 1s; background-size: cover; background-position: center; }
+        .carousel-slide.active { opacity: 1; }
+        .carousel-caption { position: absolute; bottom: 0; width: 100%; background: linear-gradient(transparent, rgba(255,255,255,0.9)); padding: 40px 20px 30px; text-align: center; }
+        .carousel-caption h1 { margin: 0; color: var(--color-purple); font-size: 2rem; text-shadow: 2px 2px 0px white; }
+
+        /* --- 區塊通用 --- */
+        section { padding: 3rem 1rem; max-width: 1000px; margin: 0 auto; }
+        .section-card { background: var(--white-glass); border-radius: 30px; padding: 30px; box-shadow: 0 10px 30px rgba(189, 224, 254, 0.4); margin-bottom: 2rem; border: 2px solid white; }
+        h2 { text-align: center; color: var(--color-blue-sky); font-size: 1.8rem; margin-bottom: 2rem; position: relative; }
+        h2::after { content: ''; display: block; width: 50px; height: 5px; background: var(--color-pink-hot); margin: 10px auto 0; border-radius: 10px; }
+
+        /* --- 價目表樣式 --- */
+        .price-list { list-style: none; padding: 0; }
+        .price-list li { background: white; padding: 15px; margin-bottom: 10px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #eee; }
+        .price-desc { font-size: 0.9rem; color: #888; display: block; margin-top: 5px; }
+
+        /* --- 模擬器區塊樣式 --- */
+        .simulator-layout { display: flex; align-items: center; gap: 30px; padding: 10px; }
+        .sim-content { flex: 1; }
+        .sim-image {
+            flex: 1; height: 250px; 
+            /* 這裡保留了原本的虛線框設計，圖片放進去會剛好填滿 */
+            background-color: white; border: 4px dashed var(--color-purple); border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; 
+        }
+        .sim-image img {
+            width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;
+        }
+        .sim-image img:hover { transform: scale(1.05); } /* 滑鼠移過去圖片稍微放大 */
+
+        .btn-sim {
+            display: inline-block; margin-top: 15px; background: var(--color-purple); color: white;
+            padding: 12px 35px; border-radius: 50px; font-size: 1.1rem; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(205, 180, 219, 0.5); border: none; cursor: pointer;
+        }
+        .btn-sim:hover { background: var(--color-pink-hot); transform: scale(1.05); }
+
+        /* --- 表單樣式 --- */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: var(--text-color); }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid var(--color-blue-light); border-radius: 15px; font-family: 'OpenHuninn', sans-serif; font-size: 1rem; background: rgba(255,255,255,0.7); box-sizing: border-box; }
+        .btn-submit { width: 100%; background: var(--color-blue-sky); color: white; padding: 15px; border: none; border-radius: 50px; font-size: 1.2rem; cursor: pointer; font-family: 'OpenHuninn', sans-serif; }
+
+        /* --- 手機版適配 --- */
+        @media (max-width: 768px) {
+            header { flex-direction: column; padding: 15px; gap: 15px; }
+            nav ul { flex-wrap: wrap; justify-content: center; gap: 10px; }
+            .carousel-container { height: 300px; }
+            .simulator-layout { flex-direction: column; text-align: center; } 
+            .sim-image { width: 100%; height: 200px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <img src="logo.png" alt="Logo"> 
+            布偶日和
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#info">店面資訊</a></li>
+                <li><a href="#pricing">價目表</a></li>
+                <li><a href="shop.html" target="_blank" style="color: var(--color-pink-hot);">🛍️ 線上商城</a></li>
+                <li><a href="#sim-section" style="color: var(--color-purple);">🎨 娃稿模擬</a></li>
+                <li><a href="#order" class="btn-nav">立即預約</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="carousel-container">
+        <div class="carousel-slide active" style="background-image: url('banner1.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('banner2.jpg');"></div>
+        <div class="carousel-slide" style="background-image: url('banner3.jpg');"></div>
+        <div class="carousel-caption">
+            <h1>布偶日和 | 手作溫度</h1>
+        </div>
+    </div>
+
+    <section id="info">
+        <div class="section-card">
+            <h2>☁️ 實體店面資訊</h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                <div style="flex: 1; min-width: 280px;">
+                    <p><strong>📍 地址：</strong>台北市夢幻區棉花路 123 號</p>
+                    <p><strong>⏰ 營業時間：</strong>週二至週日 13:00 - 20:00</p>
+                    <p><strong>📞 電話：</strong>02-1234-5678</p>
+                </div>
+                <div style="flex: 1; height: 200px; background: #eee; border-radius: 15px; display: flex; align-items: center; justify-content: center;">
+                    [Google Map 地圖]
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="pricing">
+        <div class="section-card">
+            <h2>🎀 服務價目表</h2>
+            <h3 style="color: var(--color-purple);">🧵 專業手作課程 (約 7-8 小時)</h3>
+            <ul class="price-list">
+                <li><div>基礎班 (10~20cm)<span class="price-desc">適合新手，含教學、半成品與娃稿設計</span></div><span>$3,500</span></li>
+                <li><div>進階班 (特殊造型)<span class="price-desc">適合有基礎者，獸耳打版、特殊體型</span></div><span>$4,000</span></li>
+            </ul>
+
+            <h3 style="color: var(--color-purple); margin-top: 30px;">✨ 客製化訂製 (依複雜度加價)</h3>
+            <ul class="price-list">
+                <li><div>10cm 棉花娃</div><span>$1,000 起</span></li>
+                <li><div>15cm 棉花娃</div><span>$1,500 起</span></li>
+                <li><div>20cm 棉花娃</div><span>$2,000 起</span></li>
+                <li><div>其他特殊版型</div><span>$2,200 起</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <section id="sim-section">
+        <div class="section-card">
+            <h2>🎨 專屬娃稿模擬</h2>
+            <div class="simulator-layout">
+                <div class="sim-content">
+                    <h3 style="color: var(--text-color); margin-bottom: 10px;">還沒決定好設計圖嗎？</h3>
+                    <p>腦海中有想法，卻畫不出來嗎？<br>別擔心！我們開發了線上模擬器，讓您輕鬆拼湊出心目中的娃娃模樣。</p>
+                    <ul style="margin: 15px 0; color: #666; font-size: 0.95rem; padding-left: 20px;">
+                        <li>✔️ 多種髮型、眼睛、膚色自由搭配</li>
+                        <li>✔️ 模擬完成後可下載圖片</li>
+                        <li>✔️ 下單時直接上傳截圖即可</li>
+                    </ul>
+                    <a href="simulator.html" target="_blank" class="btn-sim">👉 立即試玩模擬器</a>
+                </div>
+                <div class="sim-image">
+                    <img src="simulator-preview.png" alt="娃稿模擬器預覽" onerror="this.src='https://placehold.co/600x400/cdb4db/white?text=Preview';">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="order">
+        <div class="section-card" style="border: 4px solid var(--color-pink-hot);">
+            <h2>📝 課程 / 訂製 預約單</h2>
+            <form onsubmit="handleBooking(event)">
+                <div class="form-group">
+                    <label>您的稱呼</label>
+                    <input type="text" id="name" required placeholder="請輸入您的暱稱">
+                </div>
+
+                <div class="form-group">
+                    <label>聯絡 Email (我們會寄送確認信給您)</label>
+                    <input type="email" id="email" required placeholder="example@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label>預約項目</label>
+                    <select id="serviceType" required onchange="updateTips()">
+                        <option value="" disabled selected>請選擇...</option>
+                        <optgroup label="🧵 手作課程 (訂金 $500)">
+                            <option value="course_basic|500">基礎班課程 (訂金 $500)</option>
+                            <option value="course_adv|500">進階班課程 (訂金 $500)</option>
+                        </optgroup>
+                        <optgroup label="✨ 客製化訂製 (免費諮詢)">
+                            <option value="custom_10|0">10cm 訂製諮詢 ($0)</option>
+                            <option value="custom_15|0">15cm 訂製諮詢 ($0)</option>
+                            <option value="custom_20|0">20cm 訂製諮詢 ($0)</option>
+                            <option value="custom_other|0">特殊版型諮詢 ($0)</option>
+                        </optgroup>
+                    </select>
+                    <p id="priceTip" style="font-size: 0.9rem; color: var(--color-pink-hot); margin-top: 5px; font-weight: bold;"></p>
+                </div>
+
+                <div class="form-group">
+                    <label>希望預約日期 / 諮詢日期</label>
+                    <input type="date" id="bookingDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label>備註需求</label>
+                    <textarea id="note" rows="4"></textarea>
+                </div>
+                
+                <button type="submit" class="btn-submit">送出預約</button>
+            </form>
+        </div>
+    </section>
+
+    <footer style="text-align: center; padding: 3rem; background: var(--color-purple); color: white;">
+        <p>&copy; 2024 布偶日和 (Buou Rihe)</p>
+    </footer>
+
+    <script>
+        // 輪播圖
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.carousel-slide');
+        setInterval(() => {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }, 4000);
+
+        // 價格提示
+        function updateTips() {
+            const val = document.getElementById('serviceType').value;
+            const price = parseInt(val.split('|')[1]);
+            const tip = document.getElementById('priceTip');
+            if(price > 0) tip.innerText = `※ 此課程需先支付訂金 NT$ ${price} 以保留名額。`;
+            else tip.innerText = `※ 此為免費諮詢，送出後將由專人聯繫您，請記得在預約日期前往。`;
+        }
+
+        // 預約送出
+        function handleBooking(event) {
+            event.preventDefault();
+            
+            const serviceSelect = document.getElementById('serviceType');
+            const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+            const rawValue = serviceSelect.value;
+            if(!rawValue) return;
+
+            const [type, priceStr] = rawValue.split('|');
+            const price = parseInt(priceStr);
+            
+            const bookingData = {
+                type: type,
+                name: selectedOption.text.split('(')[0].trim(),
+                price: price,
+                date: document.getElementById('bookingDate').value,
+                user: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                note: document.getElementById('note').value
+            };
+
+            localStorage.removeItem('shopCart'); 
+            localStorage.setItem('bookingData', JSON.stringify(bookingData));
+            
+            if (price === 0) {
+                // 免費諮詢 -> 跳成功頁
+                const finalOrder = {
+                    isBooking: true,
+                    isPaid: false,
+                    contactEmail: bookingData.email,
+                    bookingDate: bookingData.date,
+                    items: [{ name: bookingData.name + " (諮詢)", price: 0 }],
+                    total: 0
+                };
+                localStorage.setItem('lastOrder', JSON.stringify(finalOrder));
+                window.location.href = "success.html";
+            } else {
+                // 付費課程 -> 跳付款頁
+                window.location.href = "payment.html";
+            }
+        }
+    </script>
+</body>
+</html>
