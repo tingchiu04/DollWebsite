@@ -59,15 +59,12 @@
         .sim-content { flex: 1; }
         .sim-image {
             flex: 1; height: 250px; 
-            /* 這裡保留了原本的虛線框設計，圖片放進去會剛好填滿 */
             background-color: white; border: 4px dashed var(--color-purple); border-radius: 20px;
             display: flex; align-items: center; justify-content: center;
             overflow: hidden; 
         }
-        .sim-image img {
-            width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;
-        }
-        .sim-image img:hover { transform: scale(1.05); } /* 滑鼠移過去圖片稍微放大 */
+        .sim-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .sim-image img:hover { transform: scale(1.05); }
 
         .btn-sim {
             display: inline-block; margin-top: 15px; background: var(--color-purple); color: white;
@@ -97,7 +94,7 @@
     <header>
         <div class="logo">
             <img src="logo.png" alt="Logo"> 
-            布偶日和
+            ☀️ 布偶日和
         </div>
         <nav>
             <ul>
@@ -140,16 +137,16 @@
             <h2>🎀 服務價目表</h2>
             <h3 style="color: var(--color-purple);">🧵 專業手作課程 (約 7-8 小時)</h3>
             <ul class="price-list">
-                <li><div>基礎班 (10~20cm)<span class="price-desc">適合新手，含教學、半成品與娃稿設計</span></div><span>$3,500</span></li>
+                <li><div>基礎班 (10~20cm)<span class="price-desc">適合新手，含教學、半成品與娃稿設計</span></div><span>$4,000</span></li>
                 <li><div>進階班 (特殊造型)<span class="price-desc">適合有基礎者，獸耳打版、特殊體型</span></div><span>$4,000</span></li>
             </ul>
 
-            <h3 style="color: var(--color-purple); margin-top: 30px;">✨ 客製化訂製 (依複雜度加價)</h3>
+            <h3 style="color: var(--color-purple); margin-top: 30px;">✨ 客製化訂製 (會視複雜度斟酌加價)</h3>
             <ul class="price-list">
-                <li><div>10cm 棉花娃</div><span>$1,000 起</span></li>
-                <li><div>15cm 棉花娃</div><span>$1,500 起</span></li>
-                <li><div>20cm 棉花娃</div><span>$2,000 起</span></li>
-                <li><div>其他特殊版型</div><span>$2,200 起</span></li>
+                <li><div>10cm 棉花娃</div><span>$1,500 起</span></li>
+                <li><div>15cm 棉花娃</div><span>$2,000 起</span></li>
+                <li><div>20cm 棉花娃</div><span>$2,500 起</span></li>
+                <li><div>其他特殊版型</div><span>$3,000 起</span></li>
             </ul>
         </div>
     </section>
@@ -169,7 +166,7 @@
                     <a href="simulator.html" target="_blank" class="btn-sim">👉 立即試玩模擬器</a>
                 </div>
                 <div class="sim-image">
-                    <img src="simulator-preview.png" alt="娃稿模擬器預覽" onerror="this.src='https://placehold.co/600x400/cdb4db/white?text=Preview';">
+                    <img src="simulator-preview.jpg" alt="娃稿模擬器預覽" onerror="this.src='https://placehold.co/600x400/cdb4db/white?text=Preview';">
                 </div>
             </div>
         </div>
@@ -241,7 +238,7 @@
             const val = document.getElementById('serviceType').value;
             const price = parseInt(val.split('|')[1]);
             const tip = document.getElementById('priceTip');
-            if(price > 0) tip.innerText = `※ 此課程需先支付訂金 NT$ ${price} 以保留名額。`;
+            if(price > 0) tip.innerText = `※ 此課程需先支付訂金 NT$ ${price} 以保留名額 (課程總價 NT$ 4,000)。`;
             else tip.innerText = `※ 此為免費諮詢，送出後將由專人聯繫您，請記得在預約日期前往。`;
         }
 
