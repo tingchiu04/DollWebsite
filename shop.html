@@ -165,15 +165,12 @@
     </div>
 
     <script>
-        // ★★★ 完整 12 項商品資料 (含多圖支援) ★★★
-        // 請確保資料夾內有 p1.jpg ~ p12.jpg
         // ★★★ 商品資料設定 (多圖版) ★★★
         const products = [
             { 
                 id: 1, 
                 name: "絲光線一盒", 
-                // 絲光線如果也有色卡，也可以像這樣加進去
-                images: ["p1.jpg"], 
+                images: ["p1.jpg"], // 絲光線若有色卡可加在後面
                 desc: "讓五官繡製起來更有光澤、立體感。<br>提供多種色系選擇。", 
                 basePrice: 200, 
                 options: [
@@ -191,8 +188,7 @@
             { 
                 id: 2, 
                 name: "5mm 水晶超柔布料", 
-                // ★ 修改這裡：加入 p2-color.jpg
-                images: ["p2.jpg", "p2-color.jpg"], 
+                images: ["p2.jpg", "p2-color.jpg"], // 示意: 第二張為色卡
                 desc: "<b>有毛流感的頭髮</b><br>尺寸：50x50cm / 一塊<br>⚠️ 請備註色號。", 
                 basePrice: 30, 
                 options: [{name:"一塊 (備註色號)", price:30}] 
@@ -200,8 +196,7 @@
             { 
                 id: 3, 
                 name: "1mm 水晶超柔布料", 
-                // ★ 修改這裡：加入 p3-color.jpg
-                images: ["p3.jpg", "p2-color.jpg"], 
+                images: ["p3.jpg", "p3-color.jpg"], 
                 desc: "<b>皮膚布料 / 造型短髮</b><br>尺寸：50x50cm / 一塊<br>⚠️ 請備註色號。", 
                 basePrice: 30, 
                 options: [{name:"一塊 (備註色號)", price:30}] 
@@ -209,8 +204,7 @@
             { 
                 id: 4, 
                 name: "長毛絨布料", 
-                // ★ 修改這裡：加入 p2-color.jpg
-                images: ["p4.jpg", "p2-color.jpg"], 
+                images: ["p4.jpg", "p4-color.jpg"], 
                 desc: "<b>製作長髮專用</b><br>尺寸：25x50cm / 一塊<br>⚠️ 請備註色號。", 
                 basePrice: 55, 
                 options: [{name:"一塊 (備註色號)", price:55}] 
@@ -218,8 +212,7 @@
             { 
                 id: 5, 
                 name: "仿兔毛布料", 
-                // ★ 修改這裡：加入 p2-color.jpg
-                images: ["p5.jpg", "p2-color.jpg"], 
+                images: ["p5.jpg", "p5-color.jpg"], 
                 desc: "<b>特殊頭髮質感</b><br>尺寸：50x50cm / 一塊<br>⚠️ 請備註色號。", 
                 basePrice: 40, 
                 options: [{name:"一塊 (備註色號)", price:40}] 
@@ -227,8 +220,7 @@
             { 
                 id: 6, 
                 name: "卷毛布料", 
-                // ★ 修改這裡：加入 p2-color.jpg
-                images: ["p6.jpg", "p2-color.jpg"], 
+                images: ["p6.jpg", "p6-color.jpg"], 
                 desc: "<b>特殊捲髮造型</b><br>尺寸：50x50cm / 一塊<br>⚠️ 請備註色號。", 
                 basePrice: 60, 
                 options: [{name:"一塊 (備註色號)", price:60}] 
@@ -297,6 +289,19 @@
                 desc: "<b>含可做兩隻20cm娃的材料 + 影片</b><br>內容：絲光線36色、5mm水晶絨x3、1mm皮膚色x1、熱消筆x1、6吋繡框、水溶膜、針包組、棉花500g、版型。", 
                 basePrice: 650, 
                 options: [{name:"標準新手套組", price:650}] 
+            },
+            // ★★★ 新增：娃稿版型 ★★★
+            {
+                id: 13,
+                name: "娃娃版型 (紙型)",
+                images: ["p13.jpg"], // 記得放 p13.jpg
+                desc: "<b>製作娃娃專用版型</b><br>含紙本版型一份。<br>⚠️ 此為紙本資料，非電子檔。",
+                basePrice: 150,
+                options: [
+                    {name:"10cm 版型", price:150},
+                    {name:"15cm 版型", price:150},
+                    {name:"20cm 版型", price:150}
+                ]
             }
         ];
 
